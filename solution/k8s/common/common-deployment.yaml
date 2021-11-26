@@ -227,7 +227,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: smo-zookeeper
+  name: zookeeper
 spec:
   type: NodePort
   selector:
@@ -349,81 +349,3 @@ spec:
       nodePort: 30004
 
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: dmaap
-  labels:
-    app: dmaap
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: dmaap
-  template:
-    metadata:
-      labels:
-        app: dmaap
-    spec:
-      containers:
-      - name: dmaap
-        image: nexus3.onap.org:10001/onap/dmaap/dmaap-mr:1.1.18
-        ports:
-        - name: port1
-          containerPort: 3904
-        - name: port2
-          containerPort: 3905
-        env:
-        - name: enableCadi
-          valueFrom:
-            configMapKeyRef:
-              name: smo-common-dmaap
-              key: enableCadi
-        volumeMounts:
-        - name: properties
-          mountPath: /appl/dmaapMR1/bundleconfig/etc/appprops
-        - name: logback
-          mountPath: /appl/dmaapMR1/bundleconfig/etc
-        - name: properties2
-          mountPath: /appl/dmaapMR1/etc
-      volumes:
-      - name: properties2
-        configMap:
-          name: smo-common-dmaap
-          items:
-          - key: "cadi.properties"
-            path: "cadi.properties"
-      - name: logback
-        configMap:
-          name: smo-common-dmaap
-          items:
-          - key: "logback.xml"
-            path: "logback.xml"
-      - name: properties
-        configMap:
-          name: smo-common-dmaap
-          items:
-          - key: "MsgRtrApi.properties"
-            path: "MsgRtrApi.properties"
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: smo-dmaap
-spec:
-  type: NodePort
-  selector:
-    app: dmaap
-  ports:
-      # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
-    - name: port3904
-      port: 3904
-      targetPort: 3904
-      # Optional field
-      # By default and for convenience, the Kubernetes control plane will allocate a port from a range (default: 30000-32767)
-      nodePort: 30005
-    - name: port3905
-      port: 3905
-      targetPort: 3905
-      nodePort: 30006

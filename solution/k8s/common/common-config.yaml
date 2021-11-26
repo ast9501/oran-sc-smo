@@ -56,7 +56,7 @@ metadata:
   name: smo-common-kafka
 data:
   enableCadi: "false"
-  KAFKA_ZOOKEEPER_CONNECT: "smo-zookeeper"
+  KAFKA_ZOOKEEPER_CONNECT: "zookeeper"
   KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "40000"
   KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: "40000"
   KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL_PLAINTEXT:PLAINTEXT,EXTERNAL_PLAINTEXT:PLAINTEXT"
@@ -83,7 +83,7 @@ kind: ConfigMap
 metadata:
   name: smo-common-dmaap
 data:
-  enableCadi: "'false'"
+  enableCadi: "false"
 
   cadi.properties: |
     aaf_locate_url=https://aaf-locate.{{ include "common.namespace" . }}:8095
@@ -158,12 +158,12 @@ data:
     ##	configurations (after removing "kafka.")
     ##	if you want to change request.required.acks it can take this one value
     #kafka.metadata.broker.list=localhost:9092,localhost:9093
-    kafka.metadata.broker.list=smo-kafka
+    kafka.metadata.broker.list=smo-kafka:9092 #smo-kafka:9092
     ##kafka.request.required.acks=-1
     #kafka.client.zookeeper=${config.zk.servers}
     consumer.timeout.ms=100
-    zookeeper.connection.timeout.ms=6000
-    zookeeper.session.timeout.ms=20000
+    zookeeper.connection.timeout.ms=10000
+    zookeeper.session.timeout.ms=200000
     zookeeper.sync.time.ms=2000
     auto.commit.interval.ms=1000
     fetch.message.max.bytes =1000000
