@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dmaap
+  labels:
+    app: dmaap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dmaap
+  template:
+    metadata:
+      labels:
+        app: dmaap
+    spec:
+      containers:
+      - name: dmaap
+        image: nexus3.onap.org:10001/onap/dmaap/dmaap-mr:1.1.18
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /appl/dmaapMR1/bundleconfig/etc/appprops/MsgRtrApi.properties
+          initialDelaySeconds: 30
+          periodSeconds: 5
+        ports:
+        - name: port1
+          containerPort: 3904
+        - name: port2
+          containerPort: 3905
+        env:
+        - name: enableCadi
+          valueFrom:
+            configMapKeyRef:
+              name: smo-common-dmaap
+              key: enableCadi
+        volumeMounts:
+        - name: properties
+          mountPath: /appl/dmaapMR1/bundleconfig/etc/appprops/MsgRtrApi.properties
+        - name: logback
+          mountPath: /appl/dmaapMR1/bundleconfig/etc/logback.xml
+        - name: properties2
+          mountPath: /appl/dmaapMR1/etc/cadi.properties
+      volumes:
+      - name: properties2
+        hostPath:
+          path: /home/alan/work/oran-smo/solution/k8s/common/dmaap/cadi.properties
+          type: FileOrCreate
+      - name: logback
+        hostPath:
+          path: /home/alan/work/oran-smo/solution/k8s/common/dmaap/logback.xml
+          type: FileOrCreate
+      - name: properties
+        hostPath:
+          path: /home/alan/work/oran-smo/solution/k8s/common/dmaap/MsgRtrApi.properties
+          type: FileOrCreate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smo-dmaap
+spec:
+  type: NodePort
+  selector:
+    app: dmaap
+  ports:
+      # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
+    - name: port3904
+      port: 3904
+      targetPort: 3904
+      # Optional field
+      # By default and for convenience, the Kubernetes control plane will allocate a port from a range (default: 30000-32767)
+      nodePort: 30005
+    - name: port3905
+      port: 3905
+      targetPort: 3905
+      nodePort: 30006
